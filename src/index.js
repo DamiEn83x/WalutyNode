@@ -1,14 +1,12 @@
 var express = require("express");
 var app = express();
-let cookieParser = require("cookie-parser");
-let tCounter = 0;
-var WalutyService = require("./WalutyService/waluty.service.ts");
+
+var WalutyService = require("./WalutyService/waluty.service.js");
 var SessionInfoManager = require("./Session.js");
 var lWalutyService = new WalutyService();
 var bodyParser = require("body-parser");
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use((req, res, next) => {
   const allowedOrigins = [
     "https://angular-kursywalut.stackblitz.io",
