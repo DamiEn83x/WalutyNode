@@ -64,7 +64,7 @@ function ObslozRequest(query, PostData, pcallback) {
     };
     pcallback(JSON.stringify(data));
   } else {
-    pcallback("Bad Request " + " " + lSessionManager.getAllProgresses());
+    pcallback("Bad Request");
   }
 }
 app.get("/", function (req, res) {
