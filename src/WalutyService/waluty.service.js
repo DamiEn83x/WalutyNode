@@ -17,7 +17,7 @@ class WalutyService {
       client = https;
     }
 
-    const fetch = require("./fetchmodulewraper.js");
+    const fetch = require("./fetchmodulewraper.js").FetchWraper;
     let data = "";
     try {
       const response = await fetch(url);
@@ -71,7 +71,7 @@ class WalutyService {
       if (url.toString().indexOf("https") === 0) {
         client = https;
       }
-      const fetch = require("./fetchmodulewraper.js");
+      const fetch = require("./fetchmodulewraper.js").FetchWraper;
 
       let data = "";
       try {
@@ -177,7 +177,7 @@ class WalutyService {
           if (url.toString().indexOf("https") === 0) {
             client = https;
           }
-          const fetch = require("./fetchmodulewraper.js");
+          const fetch = require("./fetchmodulewraper.js").FetchWraper;
 
           let data = "";
           try {

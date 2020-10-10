@@ -17,5 +17,6 @@ const EnableMockFetch = (MockedFetchFuncion) => {
 const DisableMockFetch = () => {
   DoFakeFetch = false;
 };
-//export { EnableMockFetch, DisableMockFetch };
-module.exports = FetchWraper;
+exports.EnableMockFetch = EnableMockFetch;
+exports.DisableMockFetch = DisableMockFetch;
+exports.FetchWraper = FetchWraper;

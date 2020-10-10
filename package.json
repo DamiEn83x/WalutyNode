@@ -11,8 +11,11 @@
     "body-parser": "1.19.0",
     "dateformat": "3.0.3",
     "express": "4.17.1",
+    "fetch": "1.1.0",
+    "isomorphic-fetch": "3.0.0",
     "jest": "^26.5.2",
-    "node-fetch": "2.6.1"
+    "node-fetch": "2.6.1",
+    "response": "0.18.0"
   },
   "devDependencies": {
     "nodemon": "1.18.4"
