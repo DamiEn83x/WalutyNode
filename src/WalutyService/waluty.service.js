@@ -6,23 +6,13 @@ class WalutyService {
   }
 
   async GettabelaWalut(tabela) {
-    //console.log('GettabelaWalutA');
-    const http = require("http"),
-      https = require("https");
-
-    let client = http;
     let url = NBPAPI + "/exchangerates/tables/" + tabela + "?format=json";
-    if (url.toString().indexOf("https") === 0) {
-      client = https;
-    }
 
     const fetch = require("./fetchmodulewraper.js").FetchWraper;
     let data = "";
     try {
       const response = await fetch(url);
       data = await response.json();
-      //console.log(json);
-      // return json;
     } catch (error) {
       console.log(error);
     }
@@ -62,37 +52,27 @@ class WalutyService {
         "/" +
         dateFormat(lDayTo, "yyyy-mm-dd") +
         "?format=json";
-      console.log(url);
-      const http = require("http"),
-        https = require("https");
 
-      let client = http;
-      if (url.toString().indexOf("https") === 0) {
-        client = https;
-      }
       const fetch = require("./fetchmodulewraper.js").FetchWraper;
 
       let data = "";
       try {
         const response = await fetch(url);
         data = await response.json();
-        //console.log(json);
-        // return json;
       } catch (error) {
         console.log(error);
         throw error;
       }
-      //console.log("data", data);
+
       data["rates"].map((rate) => {
         Coursetable[rate.effectiveDate] = {
           Date: rate.effectiveDate,
           rate: rate.mid
         };
       });
-      // console.log('Test1 '+lDayFrom+' '+lDayTo+' '+pDayTo);
+
       lDayFrom.setTime(lDayTo.getTime() + 1 * (1000 * 60 * 60 * 24));
       lDayTo.setTime(lDayFrom.getTime() + 364 * (1000 * 60 * 60 * 24));
-      //console.log('Test2 '+lDayFrom+' '+lDayTo+' '+pDayTo);
     } while (lDayFrom.getTime() <= pDayTo.getTime());
     return Coursetable;
   }
@@ -106,12 +86,6 @@ class WalutyService {
     reqXKEY
   ) {
     let pDayTo = new Date(DayTo);
-    console.log("GetCurrencyPowerChangesAsync");
-    console.log(DayFrom);
-    console.log(DayTo);
-    console.log(pcurr);
-    console.log(tabelaWalut);
-    console.log(callback);
 
     var dateFormat = require("dateformat");
     let tabelaZbiorcza = new Object();
@@ -131,9 +105,6 @@ class WalutyService {
       let IloscBazowa = null;
       if (waluta == "PLN") {
         if (pcurr != "PLN") {
-          // console.log(DayFrom);
-          // console.log(lDayFrom);
-          // console.log(dateFormat(lDayFrom,'yyyy-mm-dd'));
           IloscBazowa = Currencies[dateFormat(lDayFrom, "yyyy-mm-dd")].rate;
           for (var key in Currencies) {
             if (tabelaZbiorcza[key] == undefined)
@@ -170,62 +141,47 @@ class WalutyService {
             dateFormat(lDayTo, "yyyy-mm-dd") +
             "?format=json";
 
-          const http = require("http"),
-            https = require("https");
-
-          let client = http;
-          if (url.toString().indexOf("https") === 0) {
-            client = https;
-          }
           const fetch = require("./fetchmodulewraper.js").FetchWraper;
 
           let data = "";
           try {
             const response = await fetch(url);
             data = await response.json();
-            //console.log(json);
-            // return json;
           } catch (error) {
             console.log(error);
           }
 
-          {
-            // console.log('client.get(url, (resp)  end');
-            // console.log(data);
-
-            if (IloscBazowa == null) {
-              // console.log(data['rates'][0].effectiveDate);
-              //console.log(Currencies[data['rates'][0].effectiveDate]);
-              if (pcurr != "PLN")
-                IloscBazowa =
-                  Currencies[data["rates"][0].effectiveDate].rate /
-                  data["rates"][0].mid;
-              else IloscBazowa = 1.0 / data["rates"][0].mid;
-            }
-            data["rates"].map((rate) => {
-              let CRate = rate.mid;
-              if (pcurr != "PLN") {
-                CRate = CRate / Currencies[rate.effectiveDate].rate;
-              }
-              if (tabelaZbiorcza[rate.effectiveDate] == undefined)
-                tabelaZbiorcza[rate.effectiveDate] = {
-                  date: rate.effectiveDate,
-                  CenaIlosciBazowej: IloscBazowa * CRate
-                };
-              else
-                tabelaZbiorcza[rate.effectiveDate] = {
-                  date: rate.effectiveDate,
-                  CenaIlosciBazowej:
-                    IloscBazowa * CRate +
-                    tabelaZbiorcza[rate.effectiveDate].CenaIlosciBazowej
-                };
-            });
+          if (IloscBazowa == null) {
+            // console.log(data['rates'][0].effectiveDate);
+            //console.log(Currencies[data['rates'][0].effectiveDate]);
+            if (pcurr != "PLN")
+              IloscBazowa =
+                Currencies[data["rates"][0].effectiveDate].rate /
+                data["rates"][0].mid;
+            else IloscBazowa = 1.0 / data["rates"][0].mid;
           }
+          data["rates"].map((rate) => {
+            let CRate = rate.mid;
+            if (pcurr != "PLN") {
+              CRate = CRate / Currencies[rate.effectiveDate].rate;
+            }
+            if (tabelaZbiorcza[rate.effectiveDate] == undefined)
+              tabelaZbiorcza[rate.effectiveDate] = {
+                date: rate.effectiveDate,
+                CenaIlosciBazowej: IloscBazowa * CRate
+              };
+            else
+              tabelaZbiorcza[rate.effectiveDate] = {
+                date: rate.effectiveDate,
+                CenaIlosciBazowej:
+                  IloscBazowa * CRate +
+                  tabelaZbiorcza[rate.effectiveDate].CenaIlosciBazowej
+              };
+          });
+
           // console.log('Test1 '+lDayFrom+' '+lDayTo+' '+pDayTo);
           lDayFrom.setTime(lDayTo.getTime() + 1 * (1000 * 60 * 60 * 24));
           lDayTo.setTime(lDayFrom.getTime() + 364 * (1000 * 60 * 60 * 24));
-          //console.log('Test2 '+lDayFrom+' '+lDayTo+' '+pDayTo);
-          //    console.log(tabelaZbiorcza);
         } while (lDayFrom.getTime() <= pDayTo.getTime());
 
       ProcProgres = (iteracja * 100) / tabelaWalut.length;
@@ -238,15 +194,13 @@ class WalutyService {
     }
     if (bError) {
       alert("The unknown error has occurred");
-      // return;
     }
 
     for (var key in tabelaZbiorcza) {
       tabelaZbiorcza[key].Wskaznik =
         1 / (tabelaZbiorcza[key].CenaIlosciBazowej / iteracja);
     }
-    //console.log(tabelaZbiorcza);
-    //  await new Promise(r => setTimeout(r, 4000));
+
     callback({
       datatype: "dataoutput",
       data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})
