@@ -142,23 +142,24 @@ class WalutyService {
             "?format=json";
 
           const fetch = require("./fetchmodulewraper.js").FetchWraper;
-
+          console.log("url", url);
           let data = "";
           try {
             const response = await fetch(url);
             data = await response.json();
           } catch (error) {
             console.log(error);
+            throw error;
           }
 
           if (IloscBazowa == null) {
             // console.log(data['rates'][0].effectiveDate);
             //console.log(Currencies[data['rates'][0].effectiveDate]);
-            if (pcurr != "PLN")
+            if (pcurr != "PLN") {
               IloscBazowa =
                 Currencies[data["rates"][0].effectiveDate].rate /
                 data["rates"][0].mid;
-            else IloscBazowa = 1.0 / data["rates"][0].mid;
+            } else IloscBazowa = 1.0 / data["rates"][0].mid;
           }
           data["rates"].map((rate) => {
             let CRate = rate.mid;
