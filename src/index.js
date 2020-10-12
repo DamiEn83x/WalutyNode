@@ -8,10 +8,6 @@ var bodyParser = require("body-parser");
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
-  const allowedOrigins = [
-    "https://angular-kursywalut.stackblitz.io",
-    "https://react-kursywalut.stackblitz.io/"
-  ];
   const origin = req.headers.origin;
   res.append("Access-Control-Allow-Origin", origin);
   res.append("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");

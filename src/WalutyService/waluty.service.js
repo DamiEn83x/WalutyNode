@@ -7,7 +7,6 @@ class WalutyService {
 
   async GettabelaWalut(tabela) {
     //console.log('GettabelaWalutA');
-    var NBPAPI = "https://api.nbp.pl/api/";
     const http = require("http"),
       https = require("https");
 
@@ -81,8 +80,9 @@ class WalutyService {
         // return json;
       } catch (error) {
         console.log(error);
+        throw error;
       }
-
+      //console.log("data", data);
       data["rates"].map((rate) => {
         Coursetable[rate.effectiveDate] = {
           Date: rate.effectiveDate,
