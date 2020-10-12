@@ -35,11 +35,8 @@ function ObslozRequest(query, PostData, pcallback) {
     lWalutyService.GetCurrencyPowerChanges(
       (data) => {
         if (data.datatype == "dataoutput") {
-          //console.log(JSON.stringify(data.data));
-          //  lSessionManager.SaveSessionData();
           pcallback(JSON.stringify(data.data));
         } else if (data.datatype == "progress") {
-          // console.log('setprogress',data.data,data.reqKEY);
           lSessionManager.SetProgress(data.reqKEY, data.data);
         }
       },
