@@ -576,7 +576,7 @@ describe("Tetst Waluty Node", () => {
     };
 
     const mocketfetratesTZS2019 = {};
-    lDay = new Date("2019-02-01");
+    lDay = new Date("2019-02-08");
     tDayTo = new Date("2020-01-31");
     do {
       const DayString = yyyymmdd(lDay);
@@ -622,7 +622,9 @@ describe("Tetst Waluty Node", () => {
         Date: DayString,
         rate: 3
       };
-      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+      if (lDay.getDay() == 5)
+        lDay.setTime(lDay.getTime() + 3 * (1000 * 60 * 60 * 24));
+      else lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
     } while (lDay.getTime() <= tDayTo.getTime());
     mocketfetchUSD2019.rates = Object.keys(mocketfetratesUSD2019).map((key) => {
       return {
@@ -641,7 +643,9 @@ describe("Tetst Waluty Node", () => {
         Date: DayString,
         rate: 4
       };
-      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+      if (lDay.getDay() == 5)
+        lDay.setTime(lDay.getTime() + 3 * (1000 * 60 * 60 * 24));
+      else lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
     } while (lDay.getTime() <= tDayTo.getTime());
     mocketfetchUSD2020.rates = Object.keys(mocketfetratesUSD2020).map((key) => {
       return {
@@ -660,7 +664,9 @@ describe("Tetst Waluty Node", () => {
         Date: DayString,
         rate: 3
       };
-      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+      if (lDay.getDay() == 5)
+        lDay.setTime(lDay.getTime() + 3 * (1000 * 60 * 60 * 24));
+      else lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
     } while (lDay.getTime() <= tDayTo.getTime());
     mocketfetchEUR2019.rates = Object.keys(mocketfetratesEUR2019).map((key) => {
       return {
@@ -679,7 +685,9 @@ describe("Tetst Waluty Node", () => {
         Date: DayString,
         rate: 5
       };
-      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+      if (lDay.getDay() == 5)
+        lDay.setTime(lDay.getTime() + 3 * (1000 * 60 * 60 * 24));
+      else lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
     } while (lDay.getTime() <= tDayTo.getTime());
     mocketfetchEUR2020.rates = Object.keys(mocketfetratesEUR2020).map((key) => {
       return {

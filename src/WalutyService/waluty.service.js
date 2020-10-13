@@ -95,11 +95,11 @@ class WalutyService {
     let lDay = new Date(DayFrom);
     lDayTo = new Date(DayTo);
     let LastRate = {};
-    LastRate = Coursetable[0];
+    LastRate = Coursetable[Object.keys(Coursetable)[0]];
     do {
       const DayString = yyyymmdd(lDay);
       if (Coursetable[DayString] == undefined)
-        Coursetable[DayString] = { Date: LastRate.Date, rate: LastRate.rate };
+        Coursetable[DayString] = { Date: DayString, rate: LastRate.rate };
       LastRate = Coursetable[DayString];
       lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
     } while (lDay.getTime() <= lDayTo.getTime());
@@ -124,6 +124,13 @@ class WalutyService {
     let Currencies = null;
     if (pcurr != "PLN") {
       Currencies = await this.GetCurrencyRate(DayFrom, DayTo, pcurr, pTable);
+      console.log(
+        pcurr,
+        Object.values(Currencies).sort((a, b) => {
+          if (a.Date > b.Date) return 1;
+          else return -1;
+        })
+      );
     }
     for (const waluta of tabelaWalut) {
       if (waluta == pcurr) {
@@ -160,27 +167,12 @@ class WalutyService {
             lDayTo.setTime(lDayFrom.getTime() + 364 * (1000 * 60 * 60 * 24));
           if (lDayTo.getTime() > pDayTo.getTime())
             lDayTo.setTime(pDayTo.getTime());
-
-          let url =
-            NBPAPI +
-            "/exchangerates/rates/a/" +
-            waluta +
-            "/" +
-            dateFormat(lDayFrom, "yyyy-mm-dd") +
-            "/" +
-            dateFormat(lDayTo, "yyyy-mm-dd") +
-            "?format=json";
-
-          const fetch = require("./fetchmodulewraper.js").FetchWraper;
-          console.log("url", url);
-          let data = "";
-          try {
-            const response = await fetch(url);
-            data = await response.json();
-          } catch (error) {
-            console.log(error);
-            throw error;
-          }
+          let data = await this.GetCurrencyRate(
+            dateFormat(lDayFrom, "yyyy-mm-dd"),
+            dateFormat(lDayTo, "yyyy-mm-dd"),
+            waluta,
+            "A"
+          );
 
           if (IloscBazowa == null) {
             // console.log(data['rates'][0].effectiveDate);
@@ -231,7 +223,13 @@ class WalutyService {
       tabelaZbiorcza[key].Wskaznik =
         1 / (tabelaZbiorcza[key].CenaIlosciBazowej / iteracja);
     }
-
+    console.log(
+      "dataoutput",
+      Object.values(tabelaZbiorcza).sort((a, b) => {
+        if (a.date > b.date) return 1;
+        else return -1;
+      })
+    );
     callback({
       datatype: "dataoutput",
       data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})
