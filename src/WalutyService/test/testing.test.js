@@ -335,4 +335,405 @@ describe("Tetst Waluty Node", () => {
       232345
     );
   });
+
+  test("GetCurrencyPowerChanges for USD", (done) => {
+    const expectedValue = [];
+    let lDay = new Date("2019-02-01");
+    let tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      expectedValue.push({
+        CenaIlosciBazowej: 2,
+        Wskaznik: 1,
+        date: DayString
+      });
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      expectedValue.push({
+        CenaIlosciBazowej: 2,
+        Wskaznik: 1,
+        date: DayString
+      });
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+
+    const CallbackFunction = (output) => {
+      expect(output).toEqual(expectedValue);
+      done();
+    };
+
+    const mocketfetchUSD2019 = {
+      table: "A",
+      currency: "dolar amerykański",
+      code: "USD",
+      rates: []
+    };
+    const mocketfetchUSD2020 = {
+      table: "A",
+      currency: "dolar amerykański",
+      code: "USD",
+      rates: []
+    };
+    const mocketfetchEUR2019 = {
+      table: "A",
+      currency: "Euro",
+      code: "EUR",
+      rates: []
+    };
+    const mocketfetchEUR2020 = {
+      table: "A",
+      currency: "Euro",
+      code: "EUR",
+      rates: []
+    };
+
+    const mocketfetratesUSD2019 = {};
+    lDay = new Date("2019-02-01");
+    tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesUSD2019[DayString] = {
+        Date: DayString,
+        rate: 3
+      };
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchUSD2019.rates = Object.keys(mocketfetratesUSD2019).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesUSD2019[key].rate
+      };
+    });
+
+    const mocketfetratesUSD2020 = {};
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesUSD2020[DayString] = {
+        Date: DayString,
+        rate: 4
+      };
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchUSD2020.rates = Object.keys(mocketfetratesUSD2020).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesUSD2020[key].rate
+      };
+    });
+
+    const mocketfetratesEUR2019 = {};
+    lDay = new Date("2019-02-01");
+    tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesEUR2019[DayString] = {
+        Date: DayString,
+        rate: 3
+      };
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchEUR2019.rates = Object.keys(mocketfetratesEUR2019).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesEUR2019[key].rate
+      };
+    });
+
+    const mocketfetratesEUR2020 = {};
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesEUR2020[DayString] = {
+        Date: DayString,
+        rate: 5
+      };
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchEUR2020.rates = Object.keys(mocketfetratesEUR2020).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesEUR2020[key].rate
+      };
+    });
+
+    const MockedFetchFuncion = jest
+      .fn()
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchUSD2019)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchUSD2020)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchEUR2019)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchEUR2020)));
+        })
+      );
+    EnableMockFetch(MockedFetchFuncion);
+    lWalutyService.GetCurrencyPowerChanges(
+      (data) => {
+        if (data.datatype == "dataoutput") {
+          CallbackFunction(data.data);
+        }
+      },
+      "2019-02-01",
+      "2020-08-02",
+      "USD",
+      "A",
+      ["PLN", "EUR"],
+      232345
+    );
+  });
+
+  test("GetCurrencyPowerChanges for TZS", (done) => {
+    const expectedValue = [];
+    let lDay = new Date("2019-02-01");
+    let tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      expectedValue.push({
+        CenaIlosciBazowej: 2,
+        Wskaznik: 1,
+        date: DayString
+      });
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      expectedValue.push({
+        CenaIlosciBazowej: 2,
+        Wskaznik: 1,
+        date: DayString
+      });
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+
+    const CallbackFunction = (output) => {
+      expect(output).toEqual(expectedValue);
+      done();
+    };
+
+    const mocketfetchTZS2019 = {
+      table: "A",
+      currency: "szyling tanzański",
+      code: "TZS",
+      rates: []
+    };
+    const mocketfetchTZS2020 = {
+      table: "A",
+      currency: "szyling tanzański",
+      code: "TZS",
+      rates: []
+    };
+
+    const mocketfetchUSD2019 = {
+      table: "A",
+      currency: "dolar amerykański",
+      code: "USD",
+      rates: []
+    };
+    const mocketfetchUSD2020 = {
+      table: "A",
+      currency: "dolar amerykański",
+      code: "USD",
+      rates: []
+    };
+    const mocketfetchEUR2019 = {
+      table: "A",
+      currency: "Euro",
+      code: "EUR",
+      rates: []
+    };
+    const mocketfetchEUR2020 = {
+      table: "A",
+      currency: "Euro",
+      code: "EUR",
+      rates: []
+    };
+
+    const mocketfetratesTZS2019 = {};
+    lDay = new Date("2019-02-01");
+    tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesTZS2019[DayString] = {
+        Date: DayString,
+        rate: 3
+      };
+      lDay.setTime(lDay.getTime() + 7 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchTZS2019.rates = Object.keys(mocketfetratesTZS2019).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesTZS2019[key].rate
+      };
+    });
+
+    const mocketfetratesTZS2020 = {};
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesTZS2020[DayString] = {
+        Date: DayString,
+        rate: 5
+      };
+      lDay.setTime(lDay.getTime() + 7 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchTZS2020.rates = Object.keys(mocketfetratesTZS2020).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesTZS2020[key].rate
+      };
+    });
+
+    const mocketfetratesUSD2019 = {};
+    lDay = new Date("2019-02-01");
+    tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesUSD2019[DayString] = {
+        Date: DayString,
+        rate: 3
+      };
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchUSD2019.rates = Object.keys(mocketfetratesUSD2019).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesUSD2019[key].rate
+      };
+    });
+
+    const mocketfetratesUSD2020 = {};
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesUSD2020[DayString] = {
+        Date: DayString,
+        rate: 4
+      };
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchUSD2020.rates = Object.keys(mocketfetratesUSD2020).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesUSD2020[key].rate
+      };
+    });
+
+    const mocketfetratesEUR2019 = {};
+    lDay = new Date("2019-02-01");
+    tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesEUR2019[DayString] = {
+        Date: DayString,
+        rate: 3
+      };
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchEUR2019.rates = Object.keys(mocketfetratesEUR2019).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesEUR2019[key].rate
+      };
+    });
+
+    const mocketfetratesEUR2020 = {};
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesEUR2020[DayString] = {
+        Date: DayString,
+        rate: 5
+      };
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchEUR2020.rates = Object.keys(mocketfetratesEUR2020).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesEUR2020[key].rate
+      };
+    });
+
+    const MockedFetchFuncion = jest
+      .fn()
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchTZS2019)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchTZS2020)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchUSD2019)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchUSD2020)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchEUR2019)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchEUR2020)));
+        })
+      );
+    EnableMockFetch(MockedFetchFuncion);
+    lWalutyService.GetCurrencyPowerChanges(
+      (data) => {
+        if (data.datatype == "dataoutput") {
+          CallbackFunction(data.data);
+        }
+      },
+      "2019-02-01",
+      "2020-08-02",
+      "TZS",
+      "B",
+      ["USD", "PLN", "EUR"],
+      232345
+    );
+  });
 });
