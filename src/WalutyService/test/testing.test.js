@@ -513,7 +513,7 @@ describe("Tetst Waluty Node", () => {
     do {
       const DayString = yyyymmdd(lDay);
       expectedValue.push({
-        CenaIlosciBazowej: 2,
+        CenaIlosciBazowej: 3,
         Wskaznik: 1,
         date: DayString
       });
@@ -525,8 +525,8 @@ describe("Tetst Waluty Node", () => {
     do {
       const DayString = yyyymmdd(lDay);
       expectedValue.push({
-        CenaIlosciBazowej: 2,
-        Wskaznik: 1,
+        CenaIlosciBazowej: 2.4,
+        Wskaznik: 1.25,
         date: DayString
       });
       lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));

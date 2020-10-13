@@ -1,4 +1,21 @@
 const NBPAPI = "https://api.nbp.pl/api/";
+
+const yyyymmdd = (pDate) => {
+  // console.log("yyyymmdd", pDate);
+  try {
+    var mm = pDate.getMonth() + 1; // getMonth() is zero-based
+    var dd = pDate.getDate();
+    return [
+      pDate.getFullYear(),
+      (mm > 9 ? "" : "0") + mm,
+      (dd > 9 ? "" : "0") + dd
+    ].join("-");
+  } catch (error) {
+    console.log("yyyymmdd", "pDate", pDate, error);
+    throw error;
+  }
+};
+
 class WalutyService {
   async GettabelaWalutA(callback) {
     let data = await this.GettabelaWalut("A");
@@ -74,6 +91,18 @@ class WalutyService {
       lDayFrom.setTime(lDayTo.getTime() + 1 * (1000 * 60 * 60 * 24));
       lDayTo.setTime(lDayFrom.getTime() + 364 * (1000 * 60 * 60 * 24));
     } while (lDayFrom.getTime() <= pDayTo.getTime());
+
+    let lDay = new Date(DayFrom);
+    lDayTo = new Date(DayTo);
+    let LastRate = {};
+    LastRate = Coursetable[0];
+    do {
+      const DayString = yyyymmdd(lDay);
+      if (Coursetable[DayString] == undefined)
+        Coursetable[DayString] = { Date: LastRate.Date, rate: LastRate.rate };
+      LastRate = Coursetable[DayString];
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= lDayTo.getTime());
     return Coursetable;
   }
   async GetCurrencyPowerChangesAsync(
@@ -93,8 +122,9 @@ class WalutyService {
     let ProcProgres = 0;
     let iteracja = 0;
     let Currencies = null;
-    if (pcurr != "PLN")
+    if (pcurr != "PLN") {
       Currencies = await this.GetCurrencyRate(DayFrom, DayTo, pcurr, pTable);
+    }
     for (const waluta of tabelaWalut) {
       if (waluta == pcurr) {
         continue;
