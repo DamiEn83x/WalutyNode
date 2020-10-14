@@ -96,6 +96,7 @@ class WalutyService {
     lDayTo = new Date(DayTo);
     let LastRate = {};
     LastRate = Coursetable[Object.keys(Coursetable)[0]];
+
     do {
       const DayString = yyyymmdd(lDay);
       if (Coursetable[DayString] == undefined)
@@ -103,7 +104,11 @@ class WalutyService {
       LastRate = Coursetable[DayString];
       lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
     } while (lDay.getTime() <= lDayTo.getTime());
-    return Coursetable;
+
+    return Object.values(Coursetable).sort((a, b) => {
+      if (a.Date > b.Date) return 1;
+      else return -1;
+    });
   }
   async GetCurrencyPowerChangesAsync(
     callback,
@@ -121,17 +126,14 @@ class WalutyService {
     let bError = false;
     let ProcProgres = 0;
     let iteracja = 0;
-    let Currencies = null;
+    let Currencies = [];
+    const CurrenciesObj = {};
     if (pcurr != "PLN") {
       Currencies = await this.GetCurrencyRate(DayFrom, DayTo, pcurr, pTable);
-      console.log(
-        pcurr,
-        Object.values(Currencies).sort((a, b) => {
-          if (a.Date > b.Date) return 1;
-          else return -1;
-        })
-      );
     }
+    Currencies.forEach((value) => {
+      CurrenciesObj[value.Date] = value;
+    });
     for (const waluta of tabelaWalut) {
       if (waluta == pcurr) {
         continue;
@@ -142,70 +144,49 @@ class WalutyService {
       let IloscBazowa = null;
       if (waluta == "PLN") {
         if (pcurr != "PLN") {
-          IloscBazowa = Currencies[dateFormat(lDayFrom, "yyyy-mm-dd")].rate;
-          for (var key in Currencies) {
-            if (tabelaZbiorcza[key] == undefined)
-              tabelaZbiorcza[key] = {
+          IloscBazowa = Currencies[0].rate;
+          Currencies.forEach((value) => {
+            if (tabelaZbiorcza[value.Date] == undefined)
+              tabelaZbiorcza[value.Date] = {
                 date: key,
-                CenaIlosciBazowej: IloscBazowa / Currencies[key].rate
+                CenaIlosciBazowej: IloscBazowa / value.rate
               };
             else
-              tabelaZbiorcza[key] = {
-                date: key,
+              tabelaZbiorcza[value.Date] = {
+                date: value.Date,
                 CenaIlosciBazowej:
-                  IloscBazowa / Currencies[key].rate +
-                  tabelaZbiorcza[key].CenaIlosciBazowej
-              };
-          }
-        }
-      } else
-        do {
-          //   console.log(this.datepipe.transform(lDayFrom,'yyyy-MM-dd')+' '+this.datepipe.transform(lDayTo,'yyyy-MM-dd'));
-          var diff = Math.abs(lDayTo.getTime() - lDayFrom.getTime());
-          var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
-          if (diffDays > 364)
-            lDayTo.setTime(lDayFrom.getTime() + 364 * (1000 * 60 * 60 * 24));
-          if (lDayTo.getTime() > pDayTo.getTime())
-            lDayTo.setTime(pDayTo.getTime());
-          let data = await this.GetCurrencyRate(
-            dateFormat(lDayFrom, "yyyy-mm-dd"),
-            dateFormat(lDayTo, "yyyy-mm-dd"),
-            waluta,
-            "A"
-          );
-
-          if (IloscBazowa == null) {
-            // console.log(data['rates'][0].effectiveDate);
-            //console.log(Currencies[data['rates'][0].effectiveDate]);
-            if (pcurr != "PLN") {
-              IloscBazowa =
-                Currencies[data["rates"][0].effectiveDate].rate /
-                data["rates"][0].mid;
-            } else IloscBazowa = 1.0 / data["rates"][0].mid;
-          }
-          data["rates"].map((rate) => {
-            let CRate = rate.mid;
-            if (pcurr != "PLN") {
-              CRate = CRate / Currencies[rate.effectiveDate].rate;
-            }
-            if (tabelaZbiorcza[rate.effectiveDate] == undefined)
-              tabelaZbiorcza[rate.effectiveDate] = {
-                date: rate.effectiveDate,
-                CenaIlosciBazowej: IloscBazowa * CRate
-              };
-            else
-              tabelaZbiorcza[rate.effectiveDate] = {
-                date: rate.effectiveDate,
-                CenaIlosciBazowej:
-                  IloscBazowa * CRate +
-                  tabelaZbiorcza[rate.effectiveDate].CenaIlosciBazowej
+                  IloscBazowa / value.rate +
+                  tabelaZbiorcza[value.Date].CenaIlosciBazowej
               };
           });
+        }
+      } else {
+        let data = await this.GetCurrencyRate(DayFrom, DayTo, waluta, "A");
 
-          // console.log('Test1 '+lDayFrom+' '+lDayTo+' '+pDayTo);
-          lDayFrom.setTime(lDayTo.getTime() + 1 * (1000 * 60 * 60 * 24));
-          lDayTo.setTime(lDayFrom.getTime() + 364 * (1000 * 60 * 60 * 24));
-        } while (lDayFrom.getTime() <= pDayTo.getTime());
+        if (IloscBazowa == null) {
+          if (pcurr != "PLN") {
+            IloscBazowa = Currencies[0].rate / data[0].rate;
+          } else IloscBazowa = 1.0 / data[0].rate;
+        }
+        data.map((value) => {
+          let CRate = value.rate;
+          if (pcurr != "PLN") {
+            CRate = CRate / CurrenciesObj[value.Date].rate;
+          }
+          if (tabelaZbiorcza[value.Date] == undefined)
+            tabelaZbiorcza[value.Date] = {
+              date: value.Date,
+              CenaIlosciBazowej: IloscBazowa * CRate
+            };
+          else
+            tabelaZbiorcza[value.Date] = {
+              date: value.Date,
+              CenaIlosciBazowej:
+                IloscBazowa * CRate +
+                tabelaZbiorcza[value.Date].CenaIlosciBazowej
+            };
+        });
+      }
 
       ProcProgres = (iteracja * 100) / tabelaWalut.length;
       //console.log(ProcProgres);
@@ -223,13 +204,7 @@ class WalutyService {
       tabelaZbiorcza[key].Wskaznik =
         1 / (tabelaZbiorcza[key].CenaIlosciBazowej / iteracja);
     }
-    console.log(
-      "dataoutput",
-      Object.values(tabelaZbiorcza).sort((a, b) => {
-        if (a.date > b.date) return 1;
-        else return -1;
-      })
-    );
+
     callback({
       datatype: "dataoutput",
       data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})

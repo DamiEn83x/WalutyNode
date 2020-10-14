@@ -156,7 +156,13 @@ describe("Tetst Waluty Node", () => {
         })
       );
     EnableMockFetch(MockedFetchFuncion);
-    const expectedoutput = { ...mocketfetrates1, ...mocketfetrates2 };
+    const expectedoutput = Object.values({
+      ...mocketfetrates1,
+      ...mocketfetrates2
+    }).sort((a, b) => {
+      if (a.Date > b.Date) return 1;
+      else return -1;
+    });
     const output = await lWalutyService.GetCurrencyRate(
       "2019-02-01",
       "2020-08-02",
