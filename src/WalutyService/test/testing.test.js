@@ -750,4 +750,115 @@ describe("Tetst Waluty Node", () => {
       232345
     );
   });
+
+  test("GetCurrencyPowerChanges for TZS onlu by PLN", (done) => {
+    const expectedValue = [];
+    let lDay = new Date("2019-02-01");
+    let tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      expectedValue.push({
+        CenaIlosciBazowej: 1,
+        Wskaznik: 1,
+        date: DayString
+      });
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      expectedValue.push({
+        CenaIlosciBazowej: 0.5,
+        Wskaznik: 2,
+        date: DayString
+      });
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+
+    const CallbackFunction = (output) => {
+      expect(output).toEqual(expectedValue);
+      done();
+    };
+
+    const mocketfetchTZS2019 = {
+      table: "A",
+      currency: "szyling tanzański",
+      code: "TZS",
+      rates: []
+    };
+    const mocketfetchTZS2020 = {
+      table: "A",
+      currency: "szyling tanzański",
+      code: "TZS",
+      rates: []
+    };
+
+    const mocketfetratesTZS2019 = {};
+    lDay = new Date("2019-02-08");
+    tDayTo = new Date("2020-01-31");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesTZS2019[DayString] = {
+        Date: DayString,
+        rate: 3
+      };
+      lDay.setTime(lDay.getTime() + 7 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchTZS2019.rates = Object.keys(mocketfetratesTZS2019).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesTZS2019[key].rate
+      };
+    });
+
+    const mocketfetratesTZS2020 = {};
+    lDay = new Date("2020-02-01");
+    tDayTo = new Date("2020-08-02");
+    do {
+      const DayString = yyyymmdd(lDay);
+      mocketfetratesTZS2020[DayString] = {
+        Date: DayString,
+        rate: 6
+      };
+      lDay.setTime(lDay.getTime() + 7 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+    mocketfetchTZS2020.rates = Object.keys(mocketfetratesTZS2020).map((key) => {
+      return {
+        no: "001/A/NBP/2020",
+        effectiveDate: key,
+        mid: mocketfetratesTZS2020[key].rate
+      };
+    });
+
+    const MockedFetchFuncion = jest
+      .fn()
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchTZS2019)));
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolve(new Response(JSON.stringify(mocketfetchTZS2020)));
+        })
+      );
+
+    EnableMockFetch(MockedFetchFuncion);
+    lWalutyService.GetCurrencyPowerChanges(
+      (data) => {
+        if (data.datatype == "dataoutput") {
+          CallbackFunction(data.data);
+        }
+      },
+      "2019-02-01",
+      "2020-08-02",
+      "TZS",
+      "B",
+      ["PLN"],
+      232345
+    );
+  });
 });

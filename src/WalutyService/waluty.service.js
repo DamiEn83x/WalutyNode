@@ -148,7 +148,7 @@ class WalutyService {
           Currencies.forEach((value) => {
             if (tabelaZbiorcza[value.Date] == undefined)
               tabelaZbiorcza[value.Date] = {
-                date: key,
+                date: value.Date,
                 CenaIlosciBazowej: IloscBazowa / value.rate
               };
             else
