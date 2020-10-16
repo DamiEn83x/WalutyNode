@@ -59,7 +59,7 @@ function ObslozRequest(query, PostData, pcallback) {
   }
  else 
   {
-    pcallback("Node is working");
+     pcallback(JSON.stringify({msg:"Node is working"}));
   }
 }
 app.get("/", function (req, res) {
