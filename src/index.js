@@ -56,8 +56,10 @@ function ObslozRequest(query, PostData, pcallback) {
       data: Progress
     };
     pcallback(JSON.stringify(data));
-  } else {
-    pcallback("Bad Request");
+  }
+ else 
+  {
+    pcallback("Node is working");
   }
 }
 app.get("/", function (req, res) {
