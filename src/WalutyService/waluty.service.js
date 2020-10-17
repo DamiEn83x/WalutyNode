@@ -50,7 +50,7 @@ class WalutyService {
     var dateFormat = require("dateformat");
     let pDayTo = new Date(DayTo);
     let lDayFrom = new Date(DayFrom);
-
+    let lDayTo = new Date(DayTo);
     let Coursetable = new Object();
     do {
       var diff = Math.abs(lDayTo.getTime() - lDayFrom.getTime());
@@ -118,106 +118,103 @@ class WalutyService {
     tabelaWalut,
     reqXKEY
   ) {
-    try{
-    let pDayTo = new Date(DayTo);
-    if (pDayTo.getTime() > new Date().getTime())
-     pDayTo=  new Date();
-     console.log(yyyymmdd(pDayTo));
-    var dateFormat = require("dateformat");
-    let tabelaZbiorcza = new Object();
-    let bError = false;
-    let ProcProgres = 0;
-    let iteracja = 0;
-    let Currencies = [];
-    const CurrenciesObj = {};
-    if (pcurr != "PLN") {
-      Currencies = await this.GetCurrencyRate(DayFrom, DayTo, pcurr, pTable);
-    }
-    Currencies.forEach((value) => {
-      CurrenciesObj[value.Date] = value;
-    });
-    for (const waluta of tabelaWalut) {
-      if (waluta == pcurr) {
-        continue;
+    try {
+      let pDayTo = new Date(DayTo);
+      if (pDayTo.getTime() > new Date().getTime()) pDayTo = new Date();
+      console.log(yyyymmdd(pDayTo));
+      var dateFormat = require("dateformat");
+      let tabelaZbiorcza = new Object();
+      let bError = false;
+      let ProcProgres = 0;
+      let iteracja = 0;
+      let Currencies = [];
+      const CurrenciesObj = {};
+      if (pcurr != "PLN") {
+        Currencies = await this.GetCurrencyRate(DayFrom, DayTo, pcurr, pTable);
       }
-      iteracja++;
-      let lDayTo = new Date(DayTo);
-      let lDayFrom = new Date(DayFrom);
-      let IloscBazowa = null;
-      if (waluta == "PLN") {
-        if (pcurr != "PLN") {
-          IloscBazowa = Currencies[0].rate;
-          Currencies.forEach((value) => {
+      Currencies.forEach((value) => {
+        CurrenciesObj[value.Date] = value;
+      });
+      for (const waluta of tabelaWalut) {
+        if (waluta == pcurr) {
+          continue;
+        }
+        iteracja++;
+        let lDayTo = new Date(DayTo);
+        let lDayFrom = new Date(DayFrom);
+        let IloscBazowa = null;
+        if (waluta == "PLN") {
+          if (pcurr != "PLN") {
+            IloscBazowa = Currencies[0].rate;
+            Currencies.forEach((value) => {
+              if (tabelaZbiorcza[value.Date] == undefined)
+                tabelaZbiorcza[value.Date] = {
+                  date: value.Date,
+                  CenaIlosciBazowej: IloscBazowa / value.rate
+                };
+              else
+                tabelaZbiorcza[value.Date] = {
+                  date: value.Date,
+                  CenaIlosciBazowej:
+                    IloscBazowa / value.rate +
+                    tabelaZbiorcza[value.Date].CenaIlosciBazowej
+                };
+            });
+          }
+        } else {
+          let data = await this.GetCurrencyRate(DayFrom, DayTo, waluta, "A");
+
+          if (IloscBazowa == null) {
+            if (pcurr != "PLN") {
+              IloscBazowa = Currencies[0].rate / data[0].rate;
+            } else IloscBazowa = 1.0 / data[0].rate;
+          }
+          data.map((value) => {
+            let CRate = value.rate;
+            if (pcurr != "PLN") {
+              CRate = CRate / CurrenciesObj[value.Date].rate;
+            }
             if (tabelaZbiorcza[value.Date] == undefined)
               tabelaZbiorcza[value.Date] = {
                 date: value.Date,
-                CenaIlosciBazowej: IloscBazowa / value.rate
+                CenaIlosciBazowej: IloscBazowa * CRate
               };
             else
               tabelaZbiorcza[value.Date] = {
                 date: value.Date,
                 CenaIlosciBazowej:
-                  IloscBazowa / value.rate +
+                  IloscBazowa * CRate +
                   tabelaZbiorcza[value.Date].CenaIlosciBazowej
               };
           });
         }
-      } else {
-        let data = await this.GetCurrencyRate(DayFrom, DayTo, waluta, "A");
 
-        if (IloscBazowa == null) {
-          if (pcurr != "PLN") {
-            IloscBazowa = Currencies[0].rate / data[0].rate;
-          } else IloscBazowa = 1.0 / data[0].rate;
-        }
-        data.map((value) => {
-          let CRate = value.rate;
-          if (pcurr != "PLN") {
-            CRate = CRate / CurrenciesObj[value.Date].rate;
-          }
-          if (tabelaZbiorcza[value.Date] == undefined)
-            tabelaZbiorcza[value.Date] = {
-              date: value.Date,
-              CenaIlosciBazowej: IloscBazowa * CRate
-            };
-          else
-            tabelaZbiorcza[value.Date] = {
-              date: value.Date,
-              CenaIlosciBazowej:
-                IloscBazowa * CRate +
-                tabelaZbiorcza[value.Date].CenaIlosciBazowej
-            };
+        ProcProgres = (iteracja * 100) / tabelaWalut.length;
+        //console.log(ProcProgres);
+        callback({
+          datatype: "progress",
+          reqKEY: reqXKEY,
+          data: ProcProgres
         });
       }
+      if (bError) {
+        alert("The unknown error has occurred");
+      }
 
-      ProcProgres = (iteracja * 100) / tabelaWalut.length;
-      //console.log(ProcProgres);
+      for (var key in tabelaZbiorcza) {
+        tabelaZbiorcza[key].Wskaznik =
+          1 / (tabelaZbiorcza[key].CenaIlosciBazowej / iteracja);
+      }
+
       callback({
-        datatype: "progress",
-        reqKEY: reqXKEY,
-        data: ProcProgres
+        datatype: "dataoutput",
+        data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})
       });
-    }
-    if (bError) {
-      alert("The unknown error has occurred");
-    }
-
-    for (var key in tabelaZbiorcza) {
-      tabelaZbiorcza[key].Wskaznik =
-        1 / (tabelaZbiorcza[key].CenaIlosciBazowej / iteracja);
-    }
-
-
-    callback({
-      datatype: "dataoutput",
-      data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})
-    });
-        }
-    catch(error){
-           callback({
-      datatype: "error",
-      data: error
-    });
+    } catch (error) {
+      callback({
+        datatype: "error",
+        data: error
+      });
     }
   }
 
