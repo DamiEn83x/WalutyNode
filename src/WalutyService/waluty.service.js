@@ -91,14 +91,13 @@ class WalutyService {
       lDayTo.setTime(lDayFrom.getTime() + 364 * (1000 * 60 * 60 * 24));
     } while (lDayFrom.getTime() <= pDayTo.getTime());
 
-    let lDay = new Date(DayFrom);
-    lDayTo = new Date(DayTo);
-    let LastRate = {};
-    LastRate = Coursetable[Object.keys(Coursetable)[0]];
+    let lDay = new Date(Coursetable[Object.keys(Coursetable)[0]].Date);
+    lDayTo = new Date(Coursetable[Object.keys(Coursetable)[Object.keys(Coursetable).length - 1]].Date);
+    let LastRate = undefined;
 
     do {
       const DayString = yyyymmdd(lDay);
-      if (Coursetable[DayString] == undefined)
+      if ((Coursetable[DayString] == undefined) && (LastRate != undefined))
         Coursetable[DayString] = { Date: DayString, rate: LastRate.rate };
       LastRate = Coursetable[DayString];
       lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
@@ -120,8 +119,8 @@ class WalutyService {
   ) {
     try {
       let pDayTo = new Date(DayTo);
+      let pDayFrom = new Date(DayFrom);
       if (pDayTo.getTime() > new Date().getTime()) pDayTo = new Date();
-      console.log(yyyymmdd(pDayTo));
       var dateFormat = require("dateformat");
       let tabelaZbiorcza = new Object();
       let bError = false;
@@ -130,7 +129,9 @@ class WalutyService {
       let Currencies = [];
       const CurrenciesObj = {};
       if (pcurr != "PLN") {
-        Currencies = await this.GetCurrencyRate(DayFrom, DayTo, pcurr, pTable);
+        Currencies = await this.GetCurrencyRate( yyyymmdd(pDaFrom), yyyymmdd(pDayTo), pcurr, pTable);
+        pDayFrom = new Date(Currencies[0].Date);
+        pDayTo = new Date(Currencies[Currencies.length-1].Date);
       }
       Currencies.forEach((value) => {
         CurrenciesObj[value.Date] = value;
@@ -140,8 +141,8 @@ class WalutyService {
           continue;
         }
         iteracja++;
-        let lDayTo = new Date(DayTo);
-        let lDayFrom = new Date(DayFrom);
+        let lDayTo = new Date(yyyymmdd(pDayTo));
+        let lDayFrom = new Date( yyyymmdd(pDaFrom));
         let IloscBazowa = null;
         if (waluta == "PLN") {
           if (pcurr != "PLN") {
@@ -162,7 +163,7 @@ class WalutyService {
             });
           }
         } else {
-          let data = await this.GetCurrencyRate(DayFrom, DayTo, waluta, "A");
+          let data = await this.GetCurrencyRate( yyyymmdd(pDaFrom), yyyymmdd(pDayTo), waluta, "A");
 
           if (IloscBazowa == null) {
             if (pcurr != "PLN") {
