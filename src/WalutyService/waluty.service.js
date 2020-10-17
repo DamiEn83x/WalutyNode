@@ -49,8 +49,8 @@ class WalutyService {
   async GetCurrencyRate(DayFrom, DayTo, pcurr, pTable) {
     var dateFormat = require("dateformat");
     let pDayTo = new Date(DayTo);
-    let lDayTo = new Date(DayTo);
     let lDayFrom = new Date(DayFrom);
+
     let Coursetable = new Object();
     do {
       var diff = Math.abs(lDayTo.getTime() - lDayFrom.getTime());
@@ -71,7 +71,6 @@ class WalutyService {
         "?format=json";
 
       const fetch = require("./fetchmodulewraper.js").FetchWraper;
-
       let data = "";
       try {
         const response = await fetch(url);
@@ -119,8 +118,11 @@ class WalutyService {
     tabelaWalut,
     reqXKEY
   ) {
+    try{
     let pDayTo = new Date(DayTo);
-
+    if (pDayTo.getTime() > new Date().getTime())
+     pDayTo=  new Date();
+     console.log(yyyymmdd(pDayTo));
     var dateFormat = require("dateformat");
     let tabelaZbiorcza = new Object();
     let bError = false;
@@ -205,10 +207,18 @@ class WalutyService {
         1 / (tabelaZbiorcza[key].CenaIlosciBazowej / iteracja);
     }
 
+
     callback({
       datatype: "dataoutput",
       data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})
     });
+        }
+    catch(error){
+           callback({
+      datatype: "error",
+      data: error
+    });
+    }
   }
 
   GetCurrencyPowerChanges(

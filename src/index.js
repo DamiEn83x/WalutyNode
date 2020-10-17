@@ -39,6 +39,8 @@ function ObslozRequest(query, PostData, pcallback) {
         } else if (data.datatype == "progress") {
           lSessionManager.SetProgress(data.reqKEY, data.data);
         }
+        else
+         pcallback(JSON.stringify(data));
       },
       PostData.DayFrom,
       PostData.DayTo,
