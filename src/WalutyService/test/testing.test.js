@@ -513,8 +513,9 @@ describe("Tetst Waluty Node", () => {
   });
 
   test("GetCurrencyPowerChanges for TZS", (done) => {
+    var realFetch = require("isomorphic-fetch");
     const expectedValue = [];
-    let lDay = new Date("2019-02-01");
+    let lDay = new Date("2019-02-08");
     let tDayTo = new Date("2020-01-31");
     do {
       const DayString = yyyymmdd(lDay);
@@ -527,7 +528,19 @@ describe("Tetst Waluty Node", () => {
     } while (lDay.getTime() <= tDayTo.getTime());
 
     lDay = new Date("2020-02-01");
-    tDayTo = new Date("2020-08-02");
+    tDayTo = new Date("2020-02-07");
+    do {
+      const DayString = yyyymmdd(lDay);
+      expectedValue.push({
+        CenaIlosciBazowej: 1.7999999999999998,
+        Wskaznik: 1.6666666666666667,
+        date: DayString
+      });
+      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+    } while (lDay.getTime() <= tDayTo.getTime());
+
+    lDay = new Date("2020-02-08");
+    tDayTo = new Date("2020-08-01");
     do {
       const DayString = yyyymmdd(lDay);
       expectedValue.push({
@@ -620,8 +633,8 @@ describe("Tetst Waluty Node", () => {
     });
 
     const mocketfetratesUSD2019 = {};
-    lDay = new Date("2019-02-01");
-    tDayTo = new Date("2020-01-31");
+    lDay = new Date("2019-02-08");
+    tDayTo = new Date("2020-02-07");
     do {
       const DayString = yyyymmdd(lDay);
       mocketfetratesUSD2019[DayString] = {
@@ -641,8 +654,8 @@ describe("Tetst Waluty Node", () => {
     });
 
     const mocketfetratesUSD2020 = {};
-    lDay = new Date("2020-02-01");
-    tDayTo = new Date("2020-08-02");
+    lDay = new Date("2020-02-08");
+    tDayTo = new Date("2020-08-04");
     do {
       const DayString = yyyymmdd(lDay);
       mocketfetratesUSD2020[DayString] = {
@@ -662,8 +675,8 @@ describe("Tetst Waluty Node", () => {
     });
 
     const mocketfetratesEUR2019 = {};
-    lDay = new Date("2019-02-01");
-    tDayTo = new Date("2020-01-31");
+    lDay = new Date("2019-02-08");
+    tDayTo = new Date("2020-02-07");
     do {
       const DayString = yyyymmdd(lDay);
       mocketfetratesEUR2019[DayString] = {
@@ -683,8 +696,8 @@ describe("Tetst Waluty Node", () => {
     });
 
     const mocketfetratesEUR2020 = {};
-    lDay = new Date("2020-02-01");
-    tDayTo = new Date("2020-08-02");
+    lDay = new Date("2020-02-08");
+    tDayTo = new Date("2020-08-04");
     do {
       const DayString = yyyymmdd(lDay);
       mocketfetratesEUR2020[DayString] = {
@@ -753,7 +766,7 @@ describe("Tetst Waluty Node", () => {
 
   test("GetCurrencyPowerChanges for TZS onlu by PLN", (done) => {
     const expectedValue = [];
-    let lDay = new Date("2019-02-01");
+    let lDay = new Date("2019-02-08");
     let tDayTo = new Date("2020-01-31");
     do {
       const DayString = yyyymmdd(lDay);
@@ -766,7 +779,7 @@ describe("Tetst Waluty Node", () => {
     } while (lDay.getTime() <= tDayTo.getTime());
 
     lDay = new Date("2020-02-01");
-    tDayTo = new Date("2020-08-02");
+    tDayTo = new Date("2020-08-01");
     do {
       const DayString = yyyymmdd(lDay);
       expectedValue.push({

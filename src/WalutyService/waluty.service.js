@@ -92,12 +92,16 @@ class WalutyService {
     } while (lDayFrom.getTime() <= pDayTo.getTime());
 
     let lDay = new Date(Coursetable[Object.keys(Coursetable)[0]].Date);
-    lDayTo = new Date(Coursetable[Object.keys(Coursetable)[Object.keys(Coursetable).length - 1]].Date);
+    lDayTo = new Date(
+      Coursetable[
+        Object.keys(Coursetable)[Object.keys(Coursetable).length - 1]
+      ].Date
+    );
     let LastRate = undefined;
 
     do {
       const DayString = yyyymmdd(lDay);
-      if ((Coursetable[DayString] == undefined) && (LastRate != undefined))
+      if (Coursetable[DayString] == undefined && LastRate != undefined)
         Coursetable[DayString] = { Date: DayString, rate: LastRate.rate };
       LastRate = Coursetable[DayString];
       lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
@@ -121,6 +125,9 @@ class WalutyService {
       let pDayTo = new Date(DayTo);
       let pDayFrom = new Date(DayFrom);
       if (pDayTo.getTime() > new Date().getTime()) pDayTo = new Date();
+      let pDdayToStr = yyyymmdd(pDayTo);
+      let pDdayFromStr = yyyymmdd(pDayFrom);
+
       var dateFormat = require("dateformat");
       let tabelaZbiorcza = new Object();
       let bError = false;
@@ -129,9 +136,16 @@ class WalutyService {
       let Currencies = [];
       const CurrenciesObj = {};
       if (pcurr != "PLN") {
-        Currencies = await this.GetCurrencyRate( yyyymmdd(pDayFrom), yyyymmdd(pDayTo), pcurr, pTable);
+        Currencies = await this.GetCurrencyRate(
+          pDdayFromStr,
+          pDdayToStr,
+          pcurr,
+          pTable
+        );
         pDayFrom = new Date(Currencies[0].Date);
-        pDayTo = new Date(Currencies[Currencies.length-1].Date);
+        pDayTo = new Date(Currencies[Currencies.length - 1].Date);
+        pDdayFromStr = Currencies[0].Date;
+        pDdayToStr = Currencies[Currencies.length - 1].Date;
       }
       Currencies.forEach((value) => {
         CurrenciesObj[value.Date] = value;
@@ -141,12 +155,13 @@ class WalutyService {
           continue;
         }
         iteracja++;
-        let lDayTo = new Date(yyyymmdd(pDayTo));
-        let lDayFrom = new Date( yyyymmdd(pDayFrom));
+        let lDayTo = new Date(pDdayToStr);
+        let lDayFrom = new Date(pDdayFromStr);
         let IloscBazowa = null;
         if (waluta == "PLN") {
           if (pcurr != "PLN") {
             IloscBazowa = Currencies[0].rate;
+            //console.log("IloscBazowa" + waluta, IloscBazowa);
             Currencies.forEach((value) => {
               if (tabelaZbiorcza[value.Date] == undefined)
                 tabelaZbiorcza[value.Date] = {
@@ -163,16 +178,30 @@ class WalutyService {
             });
           }
         } else {
-          let data = await this.GetCurrencyRate( yyyymmdd(pDayFrom), yyyymmdd(pDayTo), waluta, "A");
+          let data = await this.GetCurrencyRate(
+            pDdayFromStr,
+            pDdayToStr,
+            waluta,
+            "A"
+          );
+          data = data.filter((value) => {
+            let DateObj = new Date(value.Date);
+            return (
+              DateObj.getTime() <= pDayTo.getTime() &&
+              DateObj.getTime() >= pDayFrom.getTime()
+            );
+          });
+          //console.log(Currencies[0], data[0]);
+          if (pcurr != "PLN") {
+            IloscBazowa = Currencies[0].rate / data[0].rate;
+          } else IloscBazowa = 1.0 / data[0].rate;
+          //console.log("IloscBazowa" + waluta, IloscBazowa, data[0]);
 
-          if (IloscBazowa == null) {
-            if (pcurr != "PLN") {
-              IloscBazowa = Currencies[0].rate / data[0].rate;
-            } else IloscBazowa = 1.0 / data[0].rate;
-          }
           data.map((value) => {
             let CRate = value.rate;
             if (pcurr != "PLN") {
+              if (CurrenciesObj[value.Date] === undefined)
+                throw "zla data " + value.Date;
               CRate = CRate / CurrenciesObj[value.Date].rate;
             }
             if (tabelaZbiorcza[value.Date] == undefined)
@@ -206,13 +235,12 @@ class WalutyService {
         tabelaZbiorcza[key].Wskaznik =
           1 / (tabelaZbiorcza[key].CenaIlosciBazowej / iteracja);
       }
-
       callback({
         datatype: "dataoutput",
         data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})
       });
     } catch (error) {
-      console.log('error',error);
+      console.log("error", error);
       callback({
         datatype: "error",
         data: error
