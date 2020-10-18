@@ -129,7 +129,7 @@ class WalutyService {
       let Currencies = [];
       const CurrenciesObj = {};
       if (pcurr != "PLN") {
-        Currencies = await this.GetCurrencyRate( yyyymmdd(pDaFrom), yyyymmdd(pDayTo), pcurr, pTable);
+        Currencies = await this.GetCurrencyRate( yyyymmdd(pDayFrom), yyyymmdd(pDayTo), pcurr, pTable);
         pDayFrom = new Date(Currencies[0].Date);
         pDayTo = new Date(Currencies[Currencies.length-1].Date);
       }
@@ -142,7 +142,7 @@ class WalutyService {
         }
         iteracja++;
         let lDayTo = new Date(yyyymmdd(pDayTo));
-        let lDayFrom = new Date( yyyymmdd(pDaFrom));
+        let lDayFrom = new Date( yyyymmdd(pDayFrom));
         let IloscBazowa = null;
         if (waluta == "PLN") {
           if (pcurr != "PLN") {
@@ -163,7 +163,7 @@ class WalutyService {
             });
           }
         } else {
-          let data = await this.GetCurrencyRate( yyyymmdd(pDaFrom), yyyymmdd(pDayTo), waluta, "A");
+          let data = await this.GetCurrencyRate( yyyymmdd(pDayFrom), yyyymmdd(pDayTo), waluta, "A");
 
           if (IloscBazowa == null) {
             if (pcurr != "PLN") {
@@ -212,6 +212,7 @@ class WalutyService {
         data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})
       });
     } catch (error) {
+      console.log('error',error);
       callback({
         datatype: "error",
         data: error
