@@ -874,4 +874,32 @@ describe("Tetst Waluty Node", () => {
       232345
     );
   });
+
+  test("Empty data  api  test", (done) => {
+    var realFetch = require("isomorphic-fetch");
+    const MockedFetchFuncion = jest.fn().mockReturnValueOnce(
+      new Promise((resolve, reject) => {
+        resolve(new Response("404 NotFound - Not Found - Brak danych"));
+      })
+    );
+
+    const CallbackFunction = (output) => {
+      expect(output).toEqual("Brak danych");
+      done();
+    };
+    EnableMockFetch(MockedFetchFuncion);
+    lWalutyService.GetCurrencyPowerChanges(
+      (data) => {
+        if (data.datatype == "error") {
+          CallbackFunction(data.data);
+        }
+      },
+      "2017-02-01",
+      "2017-02-28",
+      "VES",
+      "B",
+      ["PLN"],
+      232345
+    );
+  });
 });

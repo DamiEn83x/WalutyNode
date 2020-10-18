@@ -74,7 +74,11 @@ class WalutyService {
       let data = "";
       try {
         const response = await fetch(url);
-        data = await response.json();
+        // console.log("response", response);
+        let txtdata = await response.text();
+        if (txtdata == "404 NotFound - Not Found - Brak danych") {
+          data = { rates: [] };
+        } else data = JSON.parse(txtdata);
       } catch (error) {
         console.log(error);
         throw error;
@@ -90,23 +94,23 @@ class WalutyService {
       lDayFrom.setTime(lDayTo.getTime() + 1 * (1000 * 60 * 60 * 24));
       lDayTo.setTime(lDayFrom.getTime() + 364 * (1000 * 60 * 60 * 24));
     } while (lDayFrom.getTime() <= pDayTo.getTime());
+    if (Object.keys(Coursetable).length > 0) {
+      let lDay = new Date(Coursetable[Object.keys(Coursetable)[0]].Date);
+      lDayTo = new Date(
+        Coursetable[
+          Object.keys(Coursetable)[Object.keys(Coursetable).length - 1]
+        ].Date
+      );
+      let LastRate = undefined;
 
-    let lDay = new Date(Coursetable[Object.keys(Coursetable)[0]].Date);
-    lDayTo = new Date(
-      Coursetable[
-        Object.keys(Coursetable)[Object.keys(Coursetable).length - 1]
-      ].Date
-    );
-    let LastRate = undefined;
-
-    do {
-      const DayString = yyyymmdd(lDay);
-      if (Coursetable[DayString] == undefined && LastRate != undefined)
-        Coursetable[DayString] = { Date: DayString, rate: LastRate.rate };
-      LastRate = Coursetable[DayString];
-      lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
-    } while (lDay.getTime() <= lDayTo.getTime());
-
+      do {
+        const DayString = yyyymmdd(lDay);
+        if (Coursetable[DayString] == undefined && LastRate != undefined)
+          Coursetable[DayString] = { Date: DayString, rate: LastRate.rate };
+        LastRate = Coursetable[DayString];
+        lDay.setTime(lDay.getTime() + 1 * (1000 * 60 * 60 * 24));
+      } while (lDay.getTime() <= lDayTo.getTime());
+    }
     return Object.values(Coursetable).sort((a, b) => {
       if (a.Date > b.Date) return 1;
       else return -1;
@@ -142,6 +146,7 @@ class WalutyService {
           pcurr,
           pTable
         );
+        if (Currencies.length == 0) throw "Brak danych";
         pDayFrom = new Date(Currencies[0].Date);
         pDayTo = new Date(Currencies[Currencies.length - 1].Date);
         pDdayFromStr = Currencies[0].Date;
@@ -240,7 +245,7 @@ class WalutyService {
         data: Object.values(tabelaZbiorcza) //tabelaZbiorcza.Object.entries(data).map((data)=>{date:data.date;mid:data.mid})
       });
     } catch (error) {
-      console.log("error", error);
+      //console.log("error", error);
       callback({
         datatype: "error",
         data: error
